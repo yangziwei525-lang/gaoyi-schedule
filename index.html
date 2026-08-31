@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>蒙城八中高一年级课程表</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%93%85%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#eef2f7; --ink:#1f2937; --muted:#75808f; --line:#dde3ea;
+  --blue:#2563eb; --blue-d:#1e40af; --slate:#475569;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+.wrap{max-width:1640px;margin:0 auto;padding:14px 16px 46px}
+.top{background:linear-gradient(120deg,#1e3a8a,#2563eb 60%,#3b82f6);color:#fff;border-radius:14px;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.top h1{margin:0;font-size:22px;font-weight:700;letter-spacing:1px}
+.top h1 small{font-weight:400;font-size:14px;opacity:.9;margin-left:10px}
+.top .meta{font-size:13px;opacity:.85;margin-top:4px}
+.badge{text-align:right;font-size:13px;line-height:1.8}
+.badge b{font-size:17px}
+.badge .now{color:#fde68a;font-weight:600}
+nav.tabs{display:flex;gap:8px;margin:16px 0 12px;flex-wrap:wrap}
+.tab-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:8px 18px;font-size:14px;cursor:pointer;color:var(--slate)}
+.tab-btn:hover{border-color:var(--blue)}
+.tab-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;font-weight:600}
+.toolbar{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.toolbar label{font-size:13px;color:var(--slate);display:flex;align-items:center;gap:6px}
+select,input[type="checkbox"]{accent-color:var(--blue)}
+.btn{padding:6px 14px;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:13px;color:var(--slate)}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+.btn.primary:hover{background:var(--blue-d);color:#fff}
+.spacer{flex:1}
+.legend{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 12px;font-size:14px;color:var(--muted)}
+.legend .chip{font-size:13px;padding:2px 7px}
+section.tab{display:none}
+section.tab.active{display:block}
+.panel-h{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:4px 0 10px}
+.panel-h h2{margin:0;font-size:17px;color:var(--blue-d)}
+.panel-h .muted{font-size:12px;color:var(--muted)}
+.grid-scroll{overflow:auto;border:1px solid var(--line);border-radius:12px;background:#fff;max-height:72vh;box-shadow:0 1px 3px rgba(16,24,40,.06)}
+.tbl{border-collapse:separate;border-spacing:0;font-size:16px;min-width:100%;width:max-content}
+.tbl th,.tbl td{border:1px solid #d8dde4;padding:6px 8px;text-align:center;white-space:nowrap}
+.tbl thead tr:nth-child(1) th{position:sticky;top:0;z-index:3;background:#eef1f5;color:#24303f;height:44px;border-color:#cfd6de;font-weight:600}
+.tbl thead tr:nth-child(1) th .tag{background:#d7dce3;color:#3a4453;padding:1px 8px;border-radius:999px;font-size:12px;margin-left:6px;font-weight:400}
+.tbl thead th.corner{position:sticky;left:0;top:0;z-index:6;background:#e4e8ee;color:#1f2937;font-size:14px}
+.tbl tbody th.cls-name{position:sticky;left:0;z-index:1;background:#fff;text-align:left;padding:5px 10px;font-size:16px;color:#24303f;border-right:2px solid #dbe3ec}
+.tbl tbody tr:hover td,.tbl tbody tr:hover th.cls-name{background:#f3f5f8}
+.tbl tbody tr:nth-child(even) th.cls-name{background:#fcfdfe}
+.tbl tbody tr:nth-child(even):hover th.cls-name{background:#f3f5f8}
+/* 转置布局：星期在表头（横向），上午/下午/晚自习（及节次）在左侧，每班一页 */
+.tbl th.t-part{position:sticky;left:0;z-index:2;background:#eef1f5;color:#24303f;width:62px;font-size:14px;letter-spacing:2px;border-right:2px solid #dbe3ec}
+.tbl th.t-slot{position:sticky;left:63px;z-index:2;background:#fff;color:#24303f;width:56px;font-size:14px;border-right:1px solid #cfd6de}
+.tbl th.t-slot.mid-t{background:#fafbfd;color:#8a93a0;border-left:1px dashed #cbd5e1;border-right:1px dashed #cbd5e1}
+.tbl td.cell.na{color:#aeb6c0;background:#fbfcfd}
+.tbl thead th.cls-top{position:sticky;top:0;z-index:3;background:#eef1f5;color:#24303f;height:44px;border-color:#cfd6de}
+.tbl thead th.cls-top.cur-day{background:#d7dce3}
+.pagebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 12px;margin-bottom:10px;background:#fff;border:1px solid var(--line);border-radius:10px;font-size:13px}
+.pagebar .pg-info{color:var(--slate);font-weight:600}
+.pagebar label{color:var(--muted);display:flex;align-items:center;gap:6px;font-size:12px}
+.pagebar select{padding:4px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:#fff}
+.btn:disabled{opacity:.45;cursor:default}
+td.cell{padding:5px 3px}
+td.cell.today{background:#f3f5f8}
+td.cell.mid{background:#f6f7f9;border-left:1px dashed #cbd5e1;border-right:1px dashed #cbd5e1}
+td.cell.mid.today{background:#eef1f5}
+.chip{font-size:15px;padding:3px 8px;min-width:36px;border-radius:6px;border:1px solid #d8dde4;background:#fff;color:#1f2937;display:inline-block;text-align:center;line-height:1.45;font-weight:500}
+/* 三个主科配色：数学粉红、英语绿色、语文黄色；其余科目保持黑白灰 */
+.chip.c-math,.stat-chip.c-math{background:#fde7f1;border-color:#f0b6d0;color:#8c2050}
+.chip.c-eng,.stat-chip.c-eng{background:#e3f5e4;border-color:#aedfb1;color:#1f5f27}
+.chip.c-chi,.stat-chip.c-chi{background:#fdf5d6;border-color:#e9dc96;color:#75610e}
+.chip.c-math,.chip.c-eng,.chip.c-chi,.stat-chip.c-math,.stat-chip.c-eng,.stat-chip.c-chi{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+td.cell.cur .chip{box-shadow:0 0 0 3px #64748b}
+.stats{display:flex;flex-wrap:wrap;gap:6px;margin:8px 12px 12px}
+.stat-chip{font-size:13px;padding:2px 9px;border-radius:999px;border:1px solid #d8dde4;color:#1f2937;background:#fff;line-height:1.7}
+dialog{border:none;border-radius:14px;padding:0;box-shadow:0 20px 60px rgba(0,0,0,.25);max-width:600px;width:94vw}
+dialog::backdrop{background:rgba(15,23,42,.45)}
+.dlg-head{padding:14px 18px;background:#f0f5ff;border-bottom:1px solid var(--line);font-weight:700;color:var(--blue-d);display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.dlg-head label{font-weight:400;font-size:13px;color:var(--ink)}
+.dlg-body{padding:14px 18px 6px}
+.tm-group{border:1px solid var(--line);border-radius:10px;padding:4px 12px 10px;margin-bottom:12px}
+.tm-group b{display:block;font-size:13px;color:var(--slate);margin:8px 0 4px;padding-bottom:4px;border-bottom:1px dashed var(--line)}
+.tm-row{display:flex;flex-wrap:wrap;gap:8px 16px;padding:3px 0}
+.tm-row label{font-size:13px;color:var(--slate);display:flex;align-items:center;gap:6px}
+.tm-row input{width:96px;padding:4px 6px;border:1px solid var(--line);border-radius:6px;font-size:13px}
+.dlg-note{font-size:12px;color:var(--muted);margin:2px 0 10px}
+.dlg-foot{padding:10px 18px 16px;display:flex;gap:10px;justify-content:flex-end;border-top:1px solid var(--line)}
+.note-box{margin:14px 2px 0;font-size:13px;color:#8d5a2b;background:#fff8ec;border:1px solid #f0dfc0;border-radius:10px;padding:10px 14px;line-height:1.7}
+footer{margin-top:22px;font-size:12px;color:var(--muted);text-align:center;line-height:1.8}
+@media print{
+  body{background:#fff}
+  .tabs,.toolbar,.btn,.no-print,.legend{display:none!important}
+  section.tab:not(.active){display:none!important}
+  .grid-scroll{max-height:none!important;overflow:visible!important}
+  .tbl{font-size:13px}
+  .top{background:#1e3a8a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{padding:0}
+  @page{size:A4 landscape;margin:8mm}
+}
+@media (max-width:640px){
+  .wrap{padding:8px 10px}
+  .top h1{font-size:18px}
+  .top h1 small{display:block;margin:2px 0 0}
+  .badge{text-align:left}
+  .toolbar{gap:10px}
+  .tbl{font-size:11px}
+  .tbl th,.tbl td{padding:2px 3px}
+  .grid-scroll{max-height:60vh}
+  /* 手机端卡片式课表：一天一张卡，无需横向滑动即可完整查看 */
+  .mday{background:#fff;border:1px solid var(--line);border-radius:12px;margin:12px 0;overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.05)}
+  .mday .mhead{background:#eef1f5;color:#24303f;padding:10px 14px;font-weight:700;font-size:17px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e4e8ee}
+  .mday.today .mhead{background:#d7dce3}
+  .mday .mhead .tag{background:#fff;border:1px solid #cbd5e1;color:#4a5568;font-size:12px;font-weight:400;padding:1px 8px;border-radius:999px}
+  .mpart{display:flex;align-items:center;gap:8px;padding:10px 14px 4px;color:#6b7482;font-size:12px;letter-spacing:4px;font-weight:600;border-bottom:1px dashed #e2e8f0}
+  .mrow{display:flex;align-items:center;gap:12px;padding:7px 14px}
+  .mrow.mid{background:#fafbfd;border-left:2px dashed #cbd5e1;margin:4px 12px 4px 0;padding-left:12px;border-radius:0 8px 8px 0}
+  .mslot{width:52px;flex:none;color:#6b7482;font-size:13px;text-align:right}
+  .mrow.mid .mslot{color:#a8b2bf}
+  .mval{flex:1;display:flex;justify-content:center}
+  .mval .chip{min-width:64px;font-size:16px;padding:5px 10px}
+  .mna{color:#aeb6c0;font-size:15px}
+  .mrow.empty{padding:2px 14px 8px;color:#aeb6c0;font-size:13px;justify-content:center}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1>蒙城八中高一年级课程表<small>班级总课表</small></h1>
+    <div class="meta" id="topMeta"></div>
+  </div>
+  <div class="badge" id="nowBadge"></div>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab-btn active" data-tab="main">主课表</button>
+  <button class="tab-btn" data-tab="teachers">教师定位</button>
+</nav>
+
+<section class="tab active" id="tab-main">
+  <div class="toolbar">
+    <label><input type="checkbox" id="todayOnly"> 只看今天</label>
+    <span class="spacer"></span>
+    <button class="btn" id="settingsBtn">⚙ 节次高亮设置</button>
+    <button class="btn" id="printBtn">🖨 打印</button>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div id="gridWrap" class="grid-scroll"></div>
+  <p class="note-box" id="noteBox"></p>
+</section>
+
+<section class="tab" id="tab-teachers">
+  <div class="toolbar">
+    <label>教师姓名
+      <input type="text" id="teachSearch" placeholder="输入姓名或班级筛选…" style="padding:6px 10px;border:1px solid var(--line);border-radius:8px;font-size:14px;width:220px">
+    </label>
+    <span class="muted" id="teachCount" style="font-size:12px;color:var(--muted)"></span>
+    <span class="spacer"></span>
+    <button class="btn no-print" id="printBtn2">🖨 打印</button>
+  </div>
+  <div class="grid-scroll" id="teachWrap"></div>
+</section>
+
+<footer>
+  单文件离线版：全部数据已内嵌在本页面中，复制本文件到任意电脑（Windows / macOS / 手机均可），双击用浏览器打开即可使用，无需联网。<br>
+  班级总课表执行日期：2026年8月31日 · 数据来源：蒙城八中《高一课表（王效峰）》
+</footer>
+
+<dialog id="dlg">
+  <div class="dlg-head">节次时间高亮设置
+    <label><input type="checkbox" id="setEnabled"> 开启"当前节次"高亮</label>
+  </div>
+  <div class="dlg-body">
+    <div class="tm-group"><b>上午</b>
+      <div class="tm-row" id="rowAm"></div>
+    </div>
+    <div class="tm-group"><b>下午</b>
+      <div class="tm-row" id="rowPm"></div>
+    </div>
+    <p class="dlg-note">填写每节课的<b>开始时间</b>（示例时间仅供参考，请按学校实际作息修改，例如 08:00）。开启后，页面会把"今天的当前节次"用橙色光圈高亮。设置保存在本机浏览器中，换电脑需重新设置。</p>
+  </div>
+  <div class="dlg-foot">
+    <button class="btn" id="dlgCancel">取消</button>
+    <button class="btn primary" id="dlgOk">保存</button>
+  </div>
+</dialog>
+
+<script>
+const DATA = {"classes":[{"name":"高一1班","days":[{"day":"星期一","am":["数","英","自习","语","语"],"pm":["生","政","物","化"]},{"day":"星期二","am":["数","数","班会","语","英"],"pm":["历","地","劳动","物"]},{"day":"星期三","am":["英","英","自习","数","语"],"pm":["生","化","艺术","体"]},{"day":"星期四","am":["语","数","自习","英","社团"],"pm":["心","物","历","地"]},{"day":"星期五","am":["英","语","自习","数","数"],"pm":["政","物","体","化"]},{"day":"星期六","am":["语","英","数","自习"],"pm":[]}]},{"name":"高一2班","days":[{"day":"星期一","am":["语","数","自习","英","数"],"pm":["劳动","化","生","政"]},{"day":"星期二","am":["语","英","班会","英","数"],"pm":["化","历","物","地"]},{"day":"星期三","am":["语","语","自习","英","数"],"pm":["体","物","生","化"]},{"day":"星期四","am":["英","语","自习","数","社团"],"pm":["心","地","物","历"]},{"day":"星期五","am":["数","数","自习","英","语"],"pm":["体","政","艺术","物"]},{"day":"星期六","am":["数","语","英","自习"],"pm":[]}]},{"name":"高一3班","days":[{"day":"星期一","am":["英","语","自习","数","数"],"pm":["化","心","政","物"]},{"day":"星期二","am":["数","语","班会","语","英"],"pm":["生","物","地","历"]},{"day":"星期三","am":["数","语","自习","英","英"],"pm":["艺术","体","化","物"]},{"day":"星期四","am":["语","数","自习","英","社团"],"pm":["地","历","劳动","化"]},{"day":"星期五","am":["数","数","自习","英","语"],"pm":["物","体","生","政"]},{"day":"星期六","am":["语","英","数","自习"],"pm":[]}]},{"name":"高一4班","days":[{"day":"星期一","am":["数","数","自习","英","语"],"pm":["政","心","化","艺术"]},{"day":"星期二","am":["语","英","班会","数","数"],"pm":["地","生","历","物"]},{"day":"星期三","am":["英","英","自习","数","语"],"pm":["化","物","体","劳动"]},{"day":"星期四","am":["英","语","自习","数","社团"],"pm":["历","化","地","物"]},{"day":"星期五","am":["英","语","自习","语","数"],"pm":["生","物","体","政"]},{"day":"星期六","am":["数","语","英","自习"],"pm":[]}]},{"name":"高一5班","days":[{"day":"星期一","am":["数","英","自习","语","语"],"pm":["心","物","艺术","政"]},{"day":"星期二","am":["语","英","班会","数","数"],"pm":["物","化","生","体"]},{"day":"星期三","am":["英","英","自习","语","数"],"pm":["物","政","地","历"]},{"day":"星期四","am":["数","语","自习","英","社团"],"pm":["化","物","体","劳动"]},{"day":"星期五","am":["数","数","自习","英","语"],"pm":["化","历","地","生"]},{"day":"星期六","am":["语","英","数","自习"],"pm":[]}]},{"name":"高一6班","days":[{"day":"星期一","am":["语","语","自习","数","英"],"pm":["心","艺术","政","物"]},{"day":"星期二","am":["英","语","班会","数","数"],"pm":["物","体","化","生"]},{"day":"星期三","am":["语","数","自习","英","英"],"pm":["历","地","物","政"]},{"day":"星期四","am":["语","英","自习","数","社团"],"pm":["体","劳动","化","物"]},{"day":"星期五","am":["数","数","自习","语","英"],"pm":["地","生","化","历"]},{"day":"星期六","am":["数","语","英","自习"],"pm":[]}]},{"name":"高一7班","days":[{"day":"星期一","am":["英","英","自习","数","语"],"pm":["政","物","化","地"]},{"day":"星期二","am":["语","语","班会","数","英"],"pm":["劳动","化","体","艺术"]},{"day":"星期三","am":["语","英","自习","数","数"],"pm":["政","生","历","物"]},{"day":"星期四","am":["语","英","自习","数","社团"],"pm":["物","体","心","地"]},{"day":"星期五","am":["语","英","自习","数","数"],"pm":["历","生","物","化"]},{"day":"星期六","am":["语","英","数","自习"],"pm":[]}]},{"name":"高一8班","days":[{"day":"星期一","am":["数","语","自习","英","英"],"pm":["物","政","地","化"]},{"day":"星期二","am":["数","英","班会","语","语"],"pm":["体","物","艺术","化"]},{"day":"星期三","am":["英","语","自习","数","数"],"pm":["物","历","政","生"]},{"day":"星期四","am":["数","语","自习","英","社团"],"pm":["地","化","心","体"]},{"day":"星期五","am":["数","数","自习","语","英"],"pm":["物","劳动","历","生"]},{"day":"星期六","am":["数","语","英","自习"],"pm":[]}]},{"name":"高一9班","days":[{"day":"星期一","am":["英","语","自习","数","数"],"pm":["地","化","物","心"]},{"day":"星期二","am":["数","英","班会","语","语"],"pm":["物","艺术","体","历"]},{"day":"星期三","am":["数","英","自习","英","语"],"pm":["生","物","政",""]},{"day":"星期四","am":["语","数","自习","英","社团"],"pm":["历","体","地","化"]},{"day":"星期五","am":["数","数","自习","语","英"],"pm":["物","化","生","政"]},{"day":"星期六","am":["语","英","数","自习"],"pm":[]}]},{"name":"高一10班","days":[{"day":"星期一","am":["数","英","自习","英","语"],"pm":["艺术","物","地","心"]},{"day":"星期二","am":["语","语","班会","数","英"],"pm":["化","体","历","物"]},{"day":"星期三","am":["英","语","自习","数","数"],"pm":["化","政","生","物"]},{"day":"星期四","am":["英","语","自习","数","社团"],"pm":["体","劳动","地","历"]},{"day":"星期五","am":["语","英","自习","数","数"],"pm":["生","政","化","物"]},{"day":"星期六","am":["数","语","英","自习"],"pm":[]}]},{"name":"高一11班","days":[{"day":"星期一","am":["数","数","自习","语","英"],"pm":["化","地","艺术","物"]},{"day":"星期二","am":["语","语","班会","英","数"],"pm":["体","历","物","生"]},{"day":"星期三","am":["数","英","自习","英","语"],"pm":["物","心","化","政"]},{"day":"星期四","am":["数","语","自习","英","社团"],"pm":["劳动","历","体","地"]},{"day":"星期五","am":["英","数","自习","数","语"],"pm":["化","物","政","生"]},{"day":"星期六","am":["语","数","英","自习"],"pm":[]}]},{"name":"高一12班","days":[{"day":"星期一","am":["语","英","自习","数","数"],"pm":["物","劳动","化","地"]},{"day":"星期二","am":["英","数","班会","语","语"],"pm":["历","物","生","体"]},{"day":"星期三","am":["英","语","自习","数","数"],"pm":["政","心","物","化"]},{"day":"星期四","am":["语","数","自习","英","社团"],"pm":["地","艺术","历","体"]},{"day":"星期五","am":["英","英","自习","语","数"],"pm":["政","生","物","化"]},{"day":"星期六","am":["数","语","英","自习"],"pm":[]}]},{"name":"高一13班","days":[{"day":"星期一","am":["语","数","自习","英","英"],"pm":["历","化","物","地"]},{"day":"星期二","am":["英","语","班会","数","数"],"pm":["生","政","物","艺术"]},{"day":"星期三","am":["数","数","自习","语","英"],"pm":["历","化","体","心"]},{"day":"星期四","am":["语","英","自习","数","社团"],"pm":["地","生","物","劳动"]},{"day":"星期五","am":["语","语","自习","数","英"],"pm":["体","政","化","物"]},{"day":"星期六","am":["语","数","英","自习"],"pm":[]}]},{"name":"高一14班","days":[{"day":"星期一","am":["英","英","自习","语","数"],"pm":["物","地","历","化"]},{"day":"星期二","am":["数","数","班会","英","语"],"pm":["政","生","艺术","劳动"]},{"day":"星期三","am":["语","英","自习","数","数"],"pm":["化","体","物","心"]},{"day":"星期四","am":["数","语","自习","英","社团"],"pm":["物","政","地","历"]},{"day":"星期五","am":["数","英","自习","语","语"],"pm":["生","化","物","体"]},{"day":"星期六","am":["英","语","数","自习"],"pm":[]}]},{"name":"高一15班","days":[{"day":"星期一","am":["英","数","自习","数","语"],"pm":["体","生","地","历"]},{"day":"星期二","am":["英","语","班会","数","数"],"pm":["化","心","政","物"]},{"day":"星期三","am":["英","英","自习","语","数"],"pm":["体","化","物","生"]},{"day":"星期四","am":["英","语","自习","数","社团"],"pm":["艺术","地","历","物"]},{"day":"星期五","am":["数","英","自习","语","语"],"pm":["劳动","物","化","政"]},{"day":"星期六","am":["语","英","数","自习"],"pm":[]}]},{"name":"高一16班","days":[{"day":"星期一","am":["英","英","自习","语","数"],"pm":["地","劳动","生","体"]},{"day":"星期二","am":["数","数","班会","英","语"],"pm":["艺术","心","物","化"]},{"day":"星期三","am":["语","数","自习","数","英"],"pm":["生","历","化","物"]},{"day":"星期四","am":["语","数","自习","英","社团"],"pm":["政","历","物","地"]},{"day":"星期五","am":["语","语","自习","数","英"],"pm":["政","体","物","化"]},{"day":"星期六","am":["数","语","英","自习"],"pm":[]}]},{"name":"高一17班","days":[{"day":"星期一","am":["英","语","自习","数","数"],"pm":["物","历","体","生"]},{"day":"星期二","am":["英","英","班会","语","数"],"pm":["地","化","物","政"]},{"day":"星期三","am":["数","数","自习","英","语"],"pm":["化","生","物","体"]},{"day":"星期四","am":["数","语","自习","英","社团"],"pm":["历","地","艺术","心"]},{"day":"星期五","am":["英","数","自习","语","语"],"pm":["劳动","化","政","物"]},{"day":"星期六","am":["语","英","数","自习"],"pm":[]}]},{"name":"高一18班","days":[{"day":"星期一","am":["数","数","自习","英","语"],"pm":["生","物","历","体"]},{"day":"星期二","am":["数","语","班会","英","英"],"pm":["艺术","物","劳动","地"]},{"day":"星期三","am":["英","语","自习","数","数"],"pm":["物","政","生","化"]},{"day":"星期四","am":["语","英","自习","数","社团"],"pm":["体","化","地","心"]},{"day":"星期五","am":["语","语","自习","英","数"],"pm":["化","物","历","政"]},{"day":"星期六","am":["数","语","英","自习"],"pm":[]}]},{"name":"高一19班","days":[{"day":"星期一","am":["数","英","自习","语","语"],"pm":["化","体","物","政"]},{"day":"星期二","am":["语","英","班会","数","数"],"pm":["体","生","地","物"]},{"day":"星期三","am":["语","数","自习","英","英"],"pm":["艺术","物","政","历"]},{"day":"星期四","am":["数","语","自习","英","社团"],"pm":["地","心","生","化"]},{"day":"星期五","am":["英","语","自习","数","数"],"pm":["物","劳动","化","历"]},{"day":"星期六","am":["语","数","英","自习"],"pm":[]}]},{"name":"高一20班","days":[{"day":"星期一","am":["英","数","自习","语","语"],"pm":["地","政","体","物"]},{"day":"星期二","am":["数","数","班会","语","英"],"pm":["物","劳动","体","生"]},{"day":"星期三","am":["英","英","自习","语","数"],"pm":["政","历","化","物"]},{"day":"星期四","am":["语","英","自习","数","社团"],"pm":["生","心","化","艺术"]},{"day":"星期五","am":["数","数","自习","英","语"],"pm":["地","历","物","化"]},{"day":"星期六","am":["语","英","数","自习"],"pm":[]}]},{"name":"高一21班","days":[{"day":"星期一","am":["数","数","自习","语","英"],"pm":["体","历","地","化"]},{"day":"星期二","am":["语","语","班会","英","数"],"pm":["生","物","劳动","心"]},{"day":"星期三","am":["英","语","自习","数","数"],"pm":["化","物","艺术","政"]},{"day":"星期四","am":["语","英","自习","数","社团"],"pm":["化","物","体","生"]},{"day":"星期五","am":["英","英","自习","数","语"],"pm":["历","政","地","物"]},{"day":"星期六","am":["语","数","英","自习"],"pm":[]}]},{"name":"高一22班","days":[{"day":"星期一","am":["语","英","自习","数","数"],"pm":["政","地","化","历"]},{"day":"星期二","am":["英","数","班会","语","语"],"pm":["物","体","生","心"]},{"day":"星期三","am":["数","数","自习","英","语"],"pm":["物","化","历","艺术"]},{"day":"星期四","am":["数","语","自习","英","社团"],"pm":["物","生","劳动","体"]},{"day":"星期五","am":["数","语","自习","英","英"],"pm":["物","化","政","地"]},{"day":"星期六","am":["英","语","数","自习"],"pm":[]}]}],"evening":{"dayNames":["星期一","星期二","星期三","星期四","星期五","星期日"],"classes":[{"name":"高一（1）","days":[["语","语","物","物"],["政","政","语","语"],["英","英","数","数"],["生","生","历","历"],["化","化","地","地"],["英","英","数","数"]]},{"name":"高一（2）","days":[["物","物","语","语"],["语","语","政","政"],["数","数","英","英"],["历","历","生","生"],["地","地","化","化"],["数","数","英","英"]]},{"name":"高一（3）","days":[["英","英","语","语"],["物","物","地","地"],["数","数","英","英"],["语","语","化","化"],["政","政","生","生"],["历","历","数","数"]]},{"name":"高一（4）","days":[["语","语","英","英"],["地","地","物","物"],["英","英","数","数"],["化","化","语","语"],["生","生","政","政"],["数","数","历","历"]]},{"name":"高一（5）","days":[["化","化","物","物"],["英","英","数","数"],["生","生","语","语"],["数","数","语","语"],["历","历","英","英"],["地","地","政","政"]]},{"name":"高一（6）","days":[["数","数","化","化"],["物","物","英","英"],["语","语","生","生"],["语","语","数","数"],["英","英","历","历"],["政","政","地","地"]]},{"name":"高一（7）","days":[["英","英","政","政"],["化","化","物","物"],["数","数","语","语"],["历","历","生","生"],["英","英","地","地"],["语","语","数","数"]]},{"name":"高一（8）","days":[["政","政","英","英"],["数","数","化","化"],["语","语","物","物"],["生","生","历","历"],["地","地","英","英"],["数","数","语","语"]]},{"name":"高一（9）","days":[["英","英","数","数"],["语","语","物","物"],["历","历","英","英"],["数","数","语","语"],["化","化","生","生"],["政","政","地","地"]]},{"name":"高一（10）","days":[["数","数","化","化"],["英","英","语","语"],["英","英","历","历"],["语","语","数","数"],["生","生","物","物"],["地","地","政","政"]]},{"name":"高一（11）","days":[["政","政","物","物"],["英","英","语","语"],["数","数","地","地"],["历","历","英","英"],["语","语","生","生"],["数","数","化","化"]]},{"name":"高一（12）","days":[["物","物","政","政"],["语","语","英","英"],["地","地","数","数"],["英","英","历","历"],["生","生","语","语"],["化","化","数","数"]]},{"name":"高一（13）","days":[["英","英","生","生"],["化","化","历","历"],["数","数","英","英"],["物","物","语","语"],["政","政","地","地"],["语","语","数","数"]]},{"name":"高一（14）","days":[["生","生","英","英"],["历","历","化","化"],["英","英","数","数"],["语","语","物","物"],["地","地","政","政"],["数","数","语","语"]]},{"name":"高一（15）","days":[["历","历","政","政"],["英","英","语","语"],["数","数","化","化"],["英","英","地","地"],["生","生","数","数"],["语","语","物","物"]]},{"name":"高一（16）","days":[["政","政","历","历"],["语","语","英","英"],["英","英","数","数"],["地","地","生","生"],["数","数","化","化"],["物","物","语","语"]]},{"name":"高一（17）","days":[["数","数","语","语"],["化","化","英","英"],["政","政","生","生"],["数","数","历","历"],["语","语","地","地"],["物","物","英","英"]]},{"name":"高一（18）","days":[["语","语","数","数"],["英","英","政","政"],["生","生","化","化"],["语","语","数","数"],["地","地","历","历"],["英","英","物","物"]]},{"name":"高一（19）","days":[["政","政","历","历"],["化","化","英","英"],["语","语","数","数"],["生","生","英","英"],["物","物","语","语"],["数","数","地","地"]]},{"name":"高一（20）","days":[["历","历","政","政"],["英","英","化","化"],["数","数","语","语"],["语","语","生","生"],["英","英","物","物"],["地","地","数","数"]]},{"name":"高一（21）","days":[["英","英","语","语"],["物","物","生","生"],["政","政","数","数"],["英","英","历","历"],["地","地","化","化"],["语","语","数","数"]]},{"name":"高一（22）","days":[["语","语","英","英"],["生","生","物","物"],["数","数","政","政"],["历","历","英","英"],["化","化","地","地"],["数","数","语","语"]]}]},"teachersHeaders":["班主任","语文","数学","英语","物理","化学","生物","政治","历史","地理","音乐","体育","美术","心理"],"teachers":[{"name":"高一1班","row":["方卉","尹昊然","李文静","方卉","刘铠诚","桂静","樊清文","翟方方","宋效福","吴国锋","饶伟","王维","刘文静","王芷琪"]},{"name":"高一2班","row":["李文静","尹昊然","李文静","方卉","刘铠诚","桂静","樊清文","翟方方","宋效福","吴国锋","饶伟","王维","刘文静","王芷琪"]},{"name":"高一3班","row":["宋效福","李玲秀","杨明明","蔡爽","周硕","桂静","侯雅妍","翟方方","宋效福","吴国锋","饶伟","王维","刘文静","王芷琪"]},{"name":"高一4班","row":["杨明明","李玲秀","杨明明","蔡爽","周硕","桂静","侯雅妍","翟方方","宋效福","吴国锋","饶伟","王维","刘文静","王芷琪"]},{"name":"高一5班","row":["陈南南","李振威","楚飞艳","李洪娟","周硕","桂静","侯雅妍","奉安宁","陈艳玲","陈南南","饶伟","张永强","邹光辉","王芷琪"]},{"name":"高一6班","row":["奉安宁","李振威","单灿","李洪娟","刘铠诚","周真真","侯雅妍","奉安宁","陈艳玲","陈南南","魏影","张永强","邹光辉","王芷琪"]},{"name":"高一7班","row":["任晓倩","任晓倩","牛征宇","陶菊","刘铠诚","周真真","王远洋","奉安宁","陈艳玲","徐亮","魏影","张永强","邹光辉","王芷琪"]},{"name":"高一8班","row":["李艳","任晓倩","李艳","陶菊","刘铠诚","周真真","王远洋","奉安宁","陈艳玲","徐亮","魏影","张永强","邹光辉","王芷琪"]},{"name":"高一9班","row":["赵静","代新","单杰","彭晓","黄成名","周真真","王远洋","赵静","徐文","徐亮","魏影","马慧永","武芳","王芷琪"]},{"name":"高一10班","row":["徐涛","代新","单杰","彭晓","黄成名","刘文勇","王远洋","赵静","徐文","徐涛","魏影","马慧永","武芳","王芷琪"]},{"name":"高一11班","row":["张顺强","潘如玉","张顺强","孟庆雪","黄成名","张兰兰","闫梦黎","翟方方","徐文","徐涛","于欢","马慧永","武芳","王芷琪"]},{"name":"高一12班","row":["张兰兰","潘如玉","张顺强","朱丽","黄成名","张兰兰","闫梦黎","赵静","徐文","徐涛","于欢","马慧永","武芳","王芷琪"]},{"name":"高一13班","row":["张瑞","张瑞","崔晴晴","彭凤雅","周硕","张兰兰","闫梦黎","栗瑞奇","王洁","张灿","于欢","邓宾","丁晴","王芷琪"]},{"name":"高一14班","row":["崔晴晴","张瑞","崔晴晴","彭凤雅","周硕","张兰兰","闫梦黎","栗瑞奇","王洁","张灿","于欢","邓宾","丁晴","王芷琪"]},{"name":"高一15班","row":["戴梅","戴梅","杨子威","黄朝阳","张倩","夏平平","赵娜","栗瑞奇","王洁","张灿","于欢","邓宾","丁晴","王芷琪"]},{"name":"高一16班","row":["张倩","戴梅","杨子威","张玲","张倩","夏平平","赵娜","栗瑞奇","王洁","张灿","于欢","邓宾","丁晴","王芷琪"]},{"name":"高一17班","row":["陆浩","陈子晴","王召祥","王婷婷","陆浩","夏平平","赵娜","栗瑞奇","王洁","江西","李春燕","邓宾","丁晴","王芷琪"]},{"name":"高一18班","row":["王婷婷","陈子晴","王召祥","王婷婷","陆浩","靖静","赵娜","张娟娟","蔡雪","江西","李春燕","刘思东","高媛","王芷琪"]},{"name":"高一19班","row":["胡登恒","刘兴元","胡登恒","黄朝阳","陆浩","靖静","周虹","张娟娟","蔡雪","江西","李春燕","刘思东","高媛","王芷琪"]},{"name":"高一20班","row":["赵宇","陈新宇","胡登恒","于胜学","陆浩","靖静","周虹","张娟娟","蔡雪","赵宇","李春燕","刘思东","高媛","王芷琪"]},{"name":"高一21班","row":["王效峰","王效峰","邵艳彬","姚海燕","张倩","靖静","周虹","张娟娟","蔡雪","赵宇","李春燕","刘思东","高媛","王芷琪"]},{"name":"高一22班","row":["邵艳彬","王效峰","邵艳彬","姚海燕","张倩","靖静","周虹","张娟娟","蔡雪","赵宇","李春燕","刘思东","高媛","王芷琪"]}]};
+
+/* ---------- 科目配色（简称 → [全名, 背景, 文字, 边框]） ---------- */
+const SUBJ = {
+  '语':['语文','#fde8e8','#b3382c','#f2b8b1'],
+  '数':['数学','#e4edfb','#20518f','#b9cdec'],
+  '英':['英语','#e6f4e6','#2f7d32','#b9ddba'],
+  '物':['物理','#eae5f9','#5b43a8','#cbc0eb'],
+  '化':['化学','#fdeeda','#a96a04','#f0ca8e'],
+  '生':['生物','#ddf3ef','#0e7568','#a9dcd4'],
+  '政':['政治','#e4e7fd','#3a4bbb','#bcc4f2'],
+  '历':['历史','#f3e8dc','#8a5427','#e0c3a4'],
+  '地':['地理','#dff1f9','#0f6f9f','#abd9ec'],
+  '体':['体育','#e8f6d5','#57911c','#c6e6a2'],
+  '心':['心理','#f2e1f7','#8e2aab','#dcb0e8'],
+  '劳动':['劳动','#eeeeee','#5f6672','#d4d8de'],
+  '艺术':['音乐/美术','#fbe3ec','#b81e5d','#f2adc7'],
+  '音乐':['音乐','#fbe3ec','#b81e5d','#f2adc7'],
+  '美术':['美术','#f9e6f6','#a3459f','#e8c2e4'],
+  '社团':['社团','#fdf3d7','#96700a','#eedd9c'],
+  '班会':['班会','#fff7dd','#9c7a0b','#f0e0a4'],
+  '自习':['自习','#f6f7f9','#8d959f','#e2e6ea']
+};
+function sStyle(s){ return SUBJ[s] || [s,'#f1f5f9','#64748b','#e2e8f0']; }
+const CHIP_CLS={'数':'c-math','英':'c-eng','语':'c-chi'};
+function chip(s){
+  const a = sStyle(s);
+  return '<span class="chip'+(CHIP_CLS[s]?' '+CHIP_CLS[s]:'')+'" title="'+a[0]+'">'+s+'</span>';
+}
+const NAMES=['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+const AMKEYS5=['am1','am2','','am3','am4'];
+const AMKEYS4=['am1','am2','am3','am4'];
+const PMKEYS=['pm1','pm2','pm3','pm4'];
+const STRUCT = DATA.classes[0].days.map(d=>({
+  amKeys: d.am.length===5 ? AMKEYS5 : AMKEYS4.slice(0,d.am.length),
+  pmKeys: d.pm.length ? PMKEYS.slice(0,d.pm.length) : []
+}));
+function dayName(i){ return ['星期一','星期二','星期三','星期四','星期五','星期六','星期日'][i]; }
+
+/* ---------- 本地存储 ---------- */
+function load(k,d){ try{const s=localStorage.getItem(k); return s?Object.assign({},d,JSON.parse(s)):d;}catch(e){return d;} }
+function save(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
+const PREFS_KEY='kb_prefs_v1', SET_KEY='kb_settings_v1';
+let prefs = load(PREFS_KEY,{tab:'main',todayOnly:false,gridPage:1});
+if(prefs.tab==='evening') prefs.tab='main';   /* 旧版本残留：晚自习已并入主课表 */
+let settings = load(SET_KEY,{enabled:false,times:{am1:'08:00',am2:'08:50',am3:'10:00',am4:'11:00',pm1:'14:30',pm2:'15:20',pm3:'16:20',pm4:'17:10'}});
+if(settings.times && !settings.times.am1) settings.times={am1:'08:00',am2:'08:50',am3:'10:00',am4:'11:00',pm1:'14:30',pm2:'15:20',pm3:'16:20',pm4:'17:10'};
+if(settings.times && settings.times.am1 && !settings.times.pm1) settings.times.pm1='14:30';
+
+/* ---------- 今日 / 当前节次 ---------- */
+function todayInfo(){
+  const d=new Date(), wd=d.getDay();
+  return {wd, idx: wd===0?-1:wd-1, label:NAMES[wd]};
+}
+function curSlot(){
+  if(!settings.enabled) return null;
+  const now=new Date(), t=now.getHours()*60+now.getMinutes();
+  const keys=['am1','am2','am3','am4','pm1','pm2','pm3','pm4'];
+  let cur=null;
+  for(const k of keys){
+    const s=settings.times[k]; if(!s) continue;
+    const p=s.split(':'), st=(+p[0])*60+(+p[1]);
+    if(t>=st && t<st+45){cur=k; break;}
+  }
+  return cur;
+}
+const SLOT_NAME={am1:'上午第1节',am2:'上午第2节',am3:'上午第3节',am4:'上午第4节',pm1:'下午第1节',pm2:'下午第2节',pm3:'下午第3节',pm4:'下午第4节'};
+
+/* ---------- 主课表 ---------- */
+const todayOnlyChk=document.getElementById('todayOnly');
+function renderMain(){
+  buildClassPage();
+}
+function pageBar(id,page,clsNames){
+  const pages=clsNames.length;
+  return '<div class="pagebar">'
+    +'<button class="btn" id="'+id+'Prev"'+(page<=1?' disabled':'')+'>‹ 上一个班</button>'
+    +'<span class="pg-info" id="'+id+'Info">第 <b>'+page+'</b> / '+pages+' 页（共 '+pages+' 个班）</span>'
+    +'<button class="btn" id="'+id+'Next"'+(page>=pages?' disabled':'')+'>下一个班 ›</button>'
+    +'<label>跳转 <select id="'+id+'Jump">'
+    +clsNames.map((n,i)=>'<option value="'+(i+1)+'"'+((i+1)===page?' selected':'')+'>'+n+'</option>').join('')
+    +'</select></label></div>';
+}
+function bindPage(id,key,count){
+  const prev=docById(id+'Prev'), next=docById(id+'Next'), jump=docById(id+'Jump');
+  if(prev) prev.onclick=()=>{ prefs[key]=Math.max(1,prefs[key]-1); save(PREFS_KEY,prefs); render(); };
+  if(next) next.onclick=()=>{ prefs[key]=Math.min(count,prefs[key]+1); save(PREFS_KEY,prefs); render(); };
+  if(jump) jump.onchange=()=>{ prefs[key]=+jump.value; save(PREFS_KEY,prefs); render(); };
+}
+/* 每班每天 → 对齐到统一的上午 5 行（含中间统一时段）/ 下午 4 行；无此时段的格为 null（显示“—”） */
+function dayAlign(d,di){
+  const s=STRUCT[di];
+  const am=[null,null,null,null,null], pm=[null,null,null,null];
+  if(s.amKeys.length===5){ for(let i=0;i<5;i++) am[i]=d.am[i]||''; }
+  else { am[0]=d.am[0]||''; am[1]=d.am[1]||''; am[3]=d.am[2]||''; am[4]=d.am[3]||''; }
+  if(s.pmKeys.length) for(let i=0;i<4;i++) pm[i]=d.pm[i]||'';
+  return {am,pm};
+}
+function buildClassPage(){
+  const ci=Math.min(Math.max(1,prefs.gridPage||1),DATA.classes.length)-1;
+  const c=DATA.classes[ci];
+  const ti=todayInfo().idx, sunday=ti===-1;
+  const only = prefs.todayOnly && !sunday;
+  const cur = curSlot();
+  if(window.matchMedia('(max-width:640px)').matches){ buildMobileGrid(ci,c,ti,only,cur); return; }
+  const dayIdx=[0,1,2,3,4,5,6].filter(i=>!only||i===ti);
+  const cells=c.days.map((d,di)=>dayAlign(d,di));
+  /* 周日没有日课（原表无），补一列全空的行数据；晚自习列另有周日数据 */
+  cells.push({am:[null,null,null,null,null], pm:[null,null,null,null]});
+  /* 表头：星期在上边；本页只有一个班，班级名放左上角（跨左侧“上午/下午 + 节次”两列，避免错位） */
+  let head='<tr><th class="corner" colspan="2">'+c.name+'</th>';
+  for(const di of dayIdx) head+='<th class="cls-top'+(di===ti?' cur-day':'')+'">'+dayName(di)+(di===ti?' <span class="tag">今天</span>':'')+'</th>';
+  head+='</tr>';
+  /* 主体：上午/下午在左侧，行为节次（含全年级统一的中间自习/班会时段） */
+  const PARTS=[['上午',['am1','am2','','am3','am4'],'am'],['下午',['pm1','pm2','pm3','pm4'],'pm']];
+  let body='';
+  for(const [label,keys,parTag] of PARTS){
+    keys.forEach((k,si)=>{
+      const isMid=!k;
+      let row='<tr>';
+      if(si===0) row+='<th class="t-part" rowspan="'+keys.length+'">'+label+'</th>';
+      row+='<th class="t-slot'+(isMid?' mid-t':'')+'"'+(isMid?' title="全年级统一时段（自习/班会）"':'')+'>'+(k?('第'+k.slice(2)+'节'):'')+'</th>';
+      const isCurRow=cur&&cur===k;
+      for(const di of dayIdx){
+        const v=cells[di][parTag][si];
+        row+='<td class="cell'+(di===ti?' today':'')+(isCurRow?' cur':'')+(v===null?' na':'')+'">'+(v===null?'—':(v?chip(v):''))+'</td>';
+      }
+      body+=row+'</tr>';
+    });
+  }
+  /* 晚自习（周一至周五及周日）并入本班表，周六无晚自习；周日在最后一列 */
+  const eveCls=DATA.evening.classes[ci];
+  if(eveCls){
+    const eDays=eveCls.days;
+    const nsel=Math.max(...eDays.map(a=>a.length));
+    const eveOf=(di,si)=>{            /* 网格列 → 晚自习数据：周五列=索引4，周日列=索引5，周六无 */
+      if(di===5) return null;
+      const arr=di===6?eDays[5]:eDays[di];
+      return arr&&arr[si]!==undefined?(arr[si]||''):null;
+    };
+    for(let si=0;si<nsel;si++){
+      let row='<tr>';
+      if(si===0) row+='<th class="t-part" rowspan="'+nsel+'" title="周一至周五及周日晚自习（原表执行日期：2023年11月12日）">晚自习</th>';
+      row+='<th class="t-slot">第'+(si+1)+'节</th>';
+      for(const di of dayIdx){
+        const v=eveOf(di,si);
+        row+='<td class="cell'+(di===ti?' today':'')+(v===null?' na':'')+'">'+(v===null?'—':(v?chip(v):''))+'</td>';
+      }
+      body+=row+'</tr>';
+    }
+  }
+  docById('gridWrap').innerHTML =
+    pageBar('gp',prefs.gridPage,DATA.classes.map(x=>x.name))
+    +'<table class="tbl"><thead>'+head+'</thead><tbody>'+body+'</tbody></table>'
+    +classStats(c,ci);
+  bindPage('gp','gridPage',DATA.classes.length);
+}
+/* 手机端（≤640px）：一天一张卡片，按 上午/下午/晚自习 分组竖排，无需横向滑动 */
+function buildMobileGrid(ci,c,ti,only,cur){
+  const dayIdx=[0,1,2,3,4,5,6].filter(i=>!only||i===ti);
+  const cells=c.days.map((d,di)=>dayAlign(d,di));
+  cells.push({am:[null,null,null,null,null], pm:[null,null,null,null]});
+  const e=DATA.evening.classes[ci], eDays=e?e.days:null;
+  const eveVal=(di,si)=>{
+    if(!eDays) return null;
+    if(di===5) return null;
+    const arr=di===6?eDays[5]:eDays[di];
+    return arr&&arr[si]!==undefined?(arr[si]||''):null;
+  };
+  const amNums=[1,2,null,3,4];
+  const cellHtml=v=>v===null?'<span class="mna">—</span>':(v?chip(v):'');
+  let html='';
+  for(const di of dayIdx){
+    const isToday=di===ti;
+    let card='<div class="mday'+(isToday?' today':'')+'"><div class="mhead">'+dayName(di)+(isToday?' <span class="tag">今天</span>':'')+'</div>';
+    const parts=[['上午',['am1','am2','','am3','am4'],'am'],['下午',['pm1','pm2','pm3','pm4'],'pm']];
+    for(const [label,keys,par] of parts){
+      const vals=keys.map((k,si)=>cells[di][par][si]);
+      card+='<div class="mpart">'+label+'</div>';
+      if(vals.every(v=>v===null)){
+        card+='<div class="mrow empty"><div class="mval">本时段无课</div></div>';
+        continue;
+      }
+      keys.forEach((k,si)=>{
+        const isMid=!k;
+        const num=par==='am'?amNums[si]:si+1;
+        card+='<div class="mrow'+(isMid?' mid':'')+'"><span class="mslot"'+(isMid?' title="全年级统一时段（自习/班会）"':'')+'>'+(isMid?'统一':('第'+num+'节'))+'</span><div class="mval">'+cellHtml(vals[si])+'</div></div>';
+      });
+    }
+    const evVals=[0,1,2,3].map(si=>eveVal(di,si));
+    card+='<div class="mpart">晚自习</div>';
+    if(evVals.every(v=>v===null)){
+      card+='<div class="mrow empty"><div class="mval">本时段无课</div></div>';
+    }else{
+      evVals.forEach((v,si)=>{
+        card+='<div class="mrow"><span class="mslot">第'+(si+1)+'节</span><div class="mval">'+cellHtml(v)+'</div></div>';
+      });
+    }
+    html+=card+'</div>';
+  }
+  docById('gridWrap').innerHTML =
+    pageBar('gp',prefs.gridPage,DATA.classes.map(x=>x.name))
+    +html
+    +classStats(c,ci);
+  bindPage('gp','gridPage',DATA.classes.length);
+}
+/* 每班级页底部：本周科目统计 + 晚自习统计（把原卡片页的统计并入） */
+function classStats(c,ci){
+  const order=Object.keys(SUBJ);
+  const cnt={};
+  c.days.forEach(d=>[...d.am,...(d.pm||[])].forEach(v=>{ if(v) cnt[v]=(cnt[v]||0)+1; }));
+  let stats='<div class="stats">';
+  Object.keys(cnt).sort((a,b)=>cnt[b]-cnt[a]||order.indexOf(a)-order.indexOf(b)).forEach(v=>{
+    stats+='<span class="stat-chip'+(CHIP_CLS[v]?' '+CHIP_CLS[v]:'')+'">'+v+' ×'+cnt[v]+'</span>';
+  });
+  stats+='</div>';
+  let eve='';
+  const e=DATA.evening.classes[ci];
+  if(e){
+    const ecnt={};
+    e.days.forEach(ds=>ds.forEach(v=>{ if(v) ecnt[v]=(ecnt[v]||0)+1; }));
+    eve='<div class="stats"><span class="muted" style="font-size:13px;align-self:center">晚自习（周一至周五及周日）：</span>';
+    Object.keys(ecnt).sort((a,b)=>ecnt[b]-ecnt[a]).forEach(v=>{
+      eve+='<span class="stat-chip">'+v+' ×'+ecnt[v]+'</span>';
+    });
+    eve+='</div>';
+  }
+  return '<div class="note-box">'+c.name+' · 本周科目统计：'+stats+eve+'</div>';
+}
+
+/* ---------- 教师定位 ---------- */
+function renderTeachers(){
+  const head=['班主任','语文','数学','英语','物理','化学','生物','政治','历史','地理','音乐','体育','美术','心理'];
+  let th='<tr><th class="corner">班级</th>';
+  for(const h of head){
+    th+='<th title="'+h+'">'+h+'</th>';
+  }
+  th+='</tr>';
+  const q=(document.getElementById('teachSearch').value||'').trim().toLowerCase();
+  let body='', n=0;
+  for(const t of DATA.teachers){
+    if(q && !(t.name+'|'+t.row.join('|')).toLowerCase().includes(q)) continue;
+    n++;
+    let row='<tr><th class="cls-name">'+t.name+'</th>';
+    for(const h of head){
+      const v = h==='班主任'? t.row[0] : '';
+      let cell;
+      if(h==='班主任') cell='<td style="font-weight:600;color:#1f2937">'+v+'</td>';
+      else{
+        const full = h;
+        const idx = DATA.teachersHeaders.indexOf(full);
+        cell='<td>'+(idx>=0?t.row[idx]:'')+'</td>';
+      }
+      row+=cell;
+    }
+    body+=row+'</tr>';
+  }
+  docById('teachWrap').innerHTML='<table class="tbl"><thead>'+th+'</thead><tbody>'+body+'</tbody></table>';
+  docById('teachCount').textContent='共 '+DATA.teachers.length+' 个班级'+(q?' · 匹配 '+n+' 行':'');
+}
+
+function docById(id){ return document.getElementById(id); }
+
+/* ---------- 徽标与图例 ---------- */
+function updateBadge(){
+  const ti=todayInfo(), cs=curSlot();
+  let b='今天是 <b>'+ti.label+'</b>';
+  if(ti.idx===-1) b+='（无课）';
+  else if(cs) b+=' · <span class="now">现为 '+SLOT_NAME[cs]+'</span>';
+  docById('nowBadge').innerHTML=b;
+}
+function renderLegend(){
+  let h='科目：';
+  for(const k of Object.keys(SUBJ)){
+    h+=chip(k);
+  }
+  docById('legend').innerHTML=h+' <span style="align-self:center">（鼠标悬停可看科目全称）</span>';
+  docById('topMeta').textContent='班级总课表执行日期：2026年8月31日';
+  docById('noteBox').textContent='晚自习：周一至周五及周日（原表执行日期：2023年11月12日，周六无晚自习）。备注：心理科单周奇数班上，双周偶数班上；音/美：单周上音乐，双周上美术。';
+}
+
+/* ---------- 渲染入口 ---------- */
+function render(){
+  const tabs=document.querySelectorAll('.tab-btn');
+  tabs.forEach(b=>b.classList.toggle('active', b.dataset.tab===prefs.tab));
+  docById('tab-main').classList.toggle('active', prefs.tab==='main');
+  docById('tab-teachers').classList.toggle('active', prefs.tab==='teachers');
+  const sunday = todayInfo().idx===-1;
+  todayOnlyChk.disabled=sunday;
+  todayOnlyChk.checked = prefs.todayOnly && !sunday;
+  if(sunday && prefs.todayOnly) prefs.todayOnly=false;
+  if(prefs.tab==='main') renderMain();
+  if(prefs.tab==='teachers') renderTeachers();
+  updateBadge();
+}
+setInterval(render, 60000);   /* 每分钟刷新一次"当前节次" */
+setInterval(updateBadge, 30000);
+let rzT=null;
+window.addEventListener('resize',()=>{ clearTimeout(rzT); rzT=setTimeout(render,200); });
+
+/* ---------- 事件 ---------- */
+renderLegend();
+document.querySelectorAll('.tab-btn').forEach(b=>b.onclick=()=>{ prefs.tab=b.dataset.tab; save(PREFS_KEY,prefs); render(); });
+todayOnlyChk.onchange=()=>{ prefs.todayOnly=todayOnlyChk.checked; save(PREFS_KEY,prefs); render(); };
+docById('teachSearch').oninput=()=>renderTeachers();
+docById('printBtn').onclick=()=>window.print();
+docById('printBtn2').onclick=()=>window.print();
+
+/* 设置弹窗 */
+const DEFAULT_TIMES={am1:'08:00',am2:'08:50',am3:'10:00',am4:'11:00',pm1:'14:30',pm2:'15:20',pm3:'16:20',pm4:'17:10'};
+const TM_LABEL={am1:'第1节',am2:'第2节',am3:'第3节',am4:'第4节',pm1:'第1节',pm2:'第2节',pm3:'第3节',pm4:'第4节'};
+function buildTimeRows(){
+  let ha='', hp='';
+  for(const k of ['am1','am2','am3','am4']) ha+='<label>'+TM_LABEL[k]+' <input type="time" id="t_'+k+'" value="'+(settings.times[k]||DEFAULT_TIMES[k])+'"></label>';
+  for(const k of ['pm1','pm2','pm3','pm4']) hp+='<label>'+TM_LABEL[k]+' <input type="time" id="t_'+k+'" value="'+(settings.times[k]||DEFAULT_TIMES[k])+'"></label>';
+  docById('rowAm').innerHTML=ha;
+  docById('rowPm').innerHTML=hp;
+}
+buildTimeRows();
+docById('settingsBtn').onclick=()=>{
+  docById('setEnabled').checked=settings.enabled;
+  for(const k of ['am1','am2','am3','am4','pm1','pm2','pm3','pm4'])
+    docById('t_'+k).value=settings.times[k]||DEFAULT_TIMES[k];
+  docById('dlg').showModal();
+};
+docById('dlgCancel').onclick=()=>docById('dlg').close();
+docById('dlgOk').onclick=()=>{
+  settings.enabled=docById('setEnabled').checked;
+  const t2={};
+  for(const k of ['am1','am2','am3','am4','pm1','pm2','pm3','pm4'])
+    t2[k]=docById('t_'+k).value||DEFAULT_TIMES[k];
+  settings.times=t2;
+  save(SET_KEY,settings);
+  docById('dlg').close();
+  render();
+};
+render();
+</script>
+</body>
+</html>
