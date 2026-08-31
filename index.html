@@ -108,20 +108,21 @@ footer{margin-top:22px;font-size:12px;color:var(--muted);text-align:center;line-
   .tbl{font-size:11px}
   .tbl th,.tbl td{padding:2px 3px}
   .grid-scroll{max-height:60vh}
-  /* 手机端卡片式课表：一天一张卡，无需横向滑动即可完整查看 */
-  .mday{background:#fff;border:1px solid var(--line);border-radius:12px;margin:12px 0;overflow:hidden;box-shadow:0 1px 3px rgba(16,24,40,.05)}
-  .mday .mhead{background:#eef1f5;color:#24303f;padding:10px 14px;font-weight:700;font-size:17px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #e4e8ee}
-  .mday.today .mhead{background:#d7dce3}
-  .mday .mhead .tag{background:#fff;border:1px solid #cbd5e1;color:#4a5568;font-size:12px;font-weight:400;padding:1px 8px;border-radius:999px}
-  .mpart{display:flex;align-items:center;gap:8px;padding:10px 14px 4px;color:#6b7482;font-size:12px;letter-spacing:4px;font-weight:600;border-bottom:1px dashed #e2e8f0}
-  .mrow{display:flex;align-items:center;gap:12px;padding:7px 14px}
-  .mrow.mid{background:#fafbfd;border-left:2px dashed #cbd5e1;margin:4px 12px 4px 0;padding-left:12px;border-radius:0 8px 8px 0}
-  .mslot{width:52px;flex:none;color:#6b7482;font-size:13px;text-align:right}
-  .mrow.mid .mslot{color:#a8b2bf}
-  .mval{flex:1;display:flex;justify-content:center}
-  .mval .chip{min-width:64px;font-size:16px;padding:5px 10px}
-  .mna{color:#aeb6c0;font-size:15px}
-  .mrow.empty{padding:2px 14px 8px;color:#aeb6c0;font-size:13px;justify-content:center}
+  /* 手机端紧凑全周网格：7 天 × 13 行（上午5+下午4+晚自习4）一屏看完 */
+  .mtbl{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;color:#1f2937}
+  .mtbl th,.mtbl td{border:1px solid #e7ebf1;padding:2px 0;text-align:center;vertical-align:middle;height:20px}
+  .mtbl thead th{font-weight:700;color:#24303f;font-size:11px;padding:4px 0;background:#f6f8fa;white-space:nowrap;overflow:hidden}
+  .mtbl thead th.today{background:#d7dce3}
+  .mtbl .tag{font-size:8px;font-weight:400;color:#fff;background:#5a6b7f;border-radius:999px;padding:0 3px;margin-left:1px;vertical-align:1px}
+  .mtbl th.grp{width:15px;writing-mode:vertical-rl;font-size:9px;font-weight:600;color:#54606f;padding:3px 0;letter-spacing:1px}
+  .mtbl th.num{width:21px;color:#8a93a0;font-weight:600;font-size:9px}
+  .mtbl th.num.mid-t{color:#b2bac4}
+  .mtbl td.today{background:#f0f3f7}
+  .mtbl td.na{color:#c3cad2;font-weight:400}
+  .mtbl td.cur{background:#fdf1e7}
+  .mtbl .chip{font-size:10px;min-width:0;padding:1px 2px;border-radius:4px;line-height:1.6;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mtbl td.cur .chip{box-shadow:0 0 0 2px #64748b}
+  .note-box .stat-chip{font-size:11px;padding:1px 7px}
 }
 </style>
 </head>
@@ -347,52 +348,53 @@ function buildClassPage(){
     +classStats(c,ci);
   bindPage('gp','gridPage',DATA.classes.length);
 }
-/* 手机端（≤640px）：一天一张卡片，按 上午/下午/晚自习 分组竖排，无需横向滑动 */
+/* 手机端（≤640px）：紧凑全周网格——7 天 × 13 行（上午5+下午4+晚自习4），一屏可看整周 */
 function buildMobileGrid(ci,c,ti,only,cur){
   const dayIdx=[0,1,2,3,4,5,6].filter(i=>!only||i===ti);
   const cells=c.days.map((d,di)=>dayAlign(d,di));
-  cells.push({am:[null,null,null,null,null], pm:[null,null,null,null]});
+  cells.push({am:[null,null,null,null,null], pm:[null,null,null,null]});   /* 周日无日课 */
   const e=DATA.evening.classes[ci], eDays=e?e.days:null;
-  const eveVal=(di,si)=>{
-    if(!eDays) return null;
-    if(di===5) return null;
+  const eveOf=(di,si)=>{                                                  /* 周五列=索引4，周日列=索引5，周六无 */
+    if(!eDays||di===5) return null;
     const arr=di===6?eDays[5]:eDays[di];
     return arr&&arr[si]!==undefined?(arr[si]||''):null;
   };
-  const amNums=[1,2,null,3,4];
-  const cellHtml=v=>v===null?'<span class="mna">—</span>':(v?chip(v):'');
-  let html='';
-  for(const di of dayIdx){
-    const isToday=di===ti;
-    let card='<div class="mday'+(isToday?' today':'')+'"><div class="mhead">'+dayName(di)+(isToday?' <span class="tag">今天</span>':'')+'</div>';
-    const parts=[['上午',['am1','am2','','am3','am4'],'am'],['下午',['pm1','pm2','pm3','pm4'],'pm']];
-    for(const [label,keys,par] of parts){
-      const vals=keys.map((k,si)=>cells[di][par][si]);
-      card+='<div class="mpart">'+label+'</div>';
-      if(vals.every(v=>v===null)){
-        card+='<div class="mrow empty"><div class="mval">本时段无课</div></div>';
-        continue;
+  const WN=['周一','周二','周三','周四','周五','周六','周日'];
+  let head='<tr><th class="corner" colspan="2">'+c.name+'</th>';
+  for(const di of dayIdx) head+='<th class="'+(di===ti?'today':'')+'">'+WN[di]+(di===ti?' <span class="tag">今天</span>':'')+'</th>';
+  head+='</tr>';
+  const PARTS=[['上午',['am1','am2','','am3','am4'],'am'],['下午',['pm1','pm2','pm3','pm4'],'pm']];
+  let body='';
+  for(const [label,keys,parTag] of PARTS){
+    keys.forEach((k,si)=>{
+      const isMid=!k;
+      let row='<tr>';
+      if(si===0) row+='<th class="grp" rowspan="'+keys.length+'" title="'+label+(label==='上午'?'（含全年级统一时段）':'')+'">'+label+'</th>';
+      row+='<th class="num'+(isMid?' mid-t':'')+'"'+(isMid?' title="全年级统一时段（自习/班会）"':'')+'>'+(isMid?'统':k.slice(2))+'</th>';
+      const isCurRow=cur&&cur===k;
+      for(const di of dayIdx){
+        const v=cells[di][parTag][si];
+        row+='<td class="cell'+(di===ti?' today':'')+(isCurRow?' cur':'')+(v===null?' na':'')+'">'+(v===null?'—':(v?chip(v):''))+'</td>';
       }
-      keys.forEach((k,si)=>{
-        const isMid=!k;
-        const num=par==='am'?amNums[si]:si+1;
-        card+='<div class="mrow'+(isMid?' mid':'')+'"><span class="mslot"'+(isMid?' title="全年级统一时段（自习/班会）"':'')+'>'+(isMid?'统一':('第'+num+'节'))+'</span><div class="mval">'+cellHtml(vals[si])+'</div></div>';
-      });
+      body+=row+'</tr>';
+    });
+  }
+  if(eDays){
+    const nsel=Math.max(...eDays.map(a=>a.length));
+    for(let si=0;si<nsel;si++){
+      let row='<tr>';
+      if(si===0) row+='<th class="grp" rowspan="'+nsel+'" title="周一至周五及周日晚自习（原表执行日期：2023年11月12日）">晚自习</th>';
+      row+='<th class="num">'+(si+1)+'</th>';
+      for(const di of dayIdx){
+        const v=eveOf(di,si);
+        row+='<td class="cell'+(di===ti?' today':'')+(v===null?' na':'')+'">'+(v===null?'—':(v?chip(v):''))+'</td>';
+      }
+      body+=row+'</tr>';
     }
-    const evVals=[0,1,2,3].map(si=>eveVal(di,si));
-    card+='<div class="mpart">晚自习</div>';
-    if(evVals.every(v=>v===null)){
-      card+='<div class="mrow empty"><div class="mval">本时段无课</div></div>';
-    }else{
-      evVals.forEach((v,si)=>{
-        card+='<div class="mrow"><span class="mslot">第'+(si+1)+'节</span><div class="mval">'+cellHtml(v)+'</div></div>';
-      });
-    }
-    html+=card+'</div>';
   }
   docById('gridWrap').innerHTML =
     pageBar('gp',prefs.gridPage,DATA.classes.map(x=>x.name))
-    +html
+    +'<table class="mtbl"><thead>'+head+'</thead><tbody>'+body+'</tbody></table>'
     +classStats(c,ci);
   bindPage('gp','gridPage',DATA.classes.length);
 }
