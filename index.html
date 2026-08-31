@@ -110,8 +110,8 @@ footer{margin-top:22px;font-size:12px;color:var(--muted);text-align:center;line-
   .grid-scroll{max-height:60vh}
   /* 手机端紧凑全周网格：7 天 × 13 行（上午5+下午4+晚自习4）一屏看完 */
   .mtbl{width:100%;border-collapse:collapse;table-layout:fixed;font-size:10px;background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;color:#1f2937}
-  .mtbl th,.mtbl td{border:1px solid #e7ebf1;padding:2px 0;text-align:center;vertical-align:middle;height:20px}
-  .mtbl thead th{font-weight:700;color:#24303f;font-size:11px;padding:4px 0;background:#f6f8fa;white-space:nowrap;overflow:hidden}
+  .mtbl th,.mtbl td{border:1px solid #e7ebf1;padding:2px 0;text-align:center;vertical-align:middle;height:18px}
+  .mtbl thead th{font-weight:700;color:#24303f;font-size:11px;padding:3px 0;background:#f6f8fa;white-space:nowrap;overflow:hidden}
   .mtbl thead th.today{background:#d7dce3}
   .mtbl .tag{font-size:8px;font-weight:400;color:#fff;background:#5a6b7f;border-radius:999px;padding:0 3px;margin-left:1px;vertical-align:1px}
   .mtbl th.grp{width:15px;writing-mode:vertical-rl;font-size:9px;font-weight:600;color:#54606f;padding:3px 0;letter-spacing:1px}
@@ -122,7 +122,20 @@ footer{margin-top:22px;font-size:12px;color:var(--muted);text-align:center;line-
   .mtbl td.cur{background:#fdf1e7}
   .mtbl .chip{font-size:10px;min-width:0;padding:1px 2px;border-radius:4px;line-height:1.6;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .mtbl td.cur .chip{box-shadow:0 0 0 2px #64748b}
-  .note-box .stat-chip{font-size:11px;padding:1px 7px}
+  /* 一屏收尾：压缩页眉/图例/翻页/统计，让 7×13 全周网格整表落在视口内 */
+  .top{padding:10px 14px}
+  .top h1{font-size:16px}
+  .badge{font-size:11px;line-height:1.6}
+  nav.tabs{margin:10px 0 8px}
+  .toolbar{margin-bottom:8px;padding:7px 12px;gap:8px;font-size:12px}
+  .btn{font-size:12px;padding:4px 10px}
+  .legend{margin:0 0 8px;font-size:11px}
+  .legend .chip{font-size:10px;padding:1px 5px;min-width:22px;border-radius:4px}
+  .pagebar{gap:6px;padding:6px 8px;margin-bottom:8px;font-size:12px}
+  .pagebar .btn{padding:3px 8px}
+  .stats{gap:4px;margin:6px 10px 10px}
+  .note-box{margin:8px 2px 0;font-size:11px;padding:8px 10px;line-height:1.6}
+  .note-box .stat-chip{font-size:10px;padding:1px 6px}
 }
 </style>
 </head>
